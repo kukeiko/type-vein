@@ -1,9 +1,9 @@
 let npmCommand = process.env.npm_lifecycle_event;
 
-let browsers = ["ChromeHeadless"];
+let browsers = ["ChromeHeadless", "Chromium"];
 
 if (npmCommand.includes(":watch")) {
-    browsers = ["Chrome"];
+    browsers = ["Chrome", "Chromium"];
 }
 
 module.exports = function (config) {
