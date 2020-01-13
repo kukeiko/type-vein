@@ -12,3 +12,4 @@ export * from "./tapped-type";
 export * from "./source-type";
 export * from "./source-type-tapper";
 export * from "./query";
+export * from "./utils";

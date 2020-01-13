@@ -6,7 +6,7 @@ export function runObjectCriterionCases(): void {
      * [A] is a superset of itself
      */
     expectObjectCriterionReduction(
-        "{ foo == 2 } should completely reduce itself",
+        "{ foo == 2, bar (in (3, 4) || == 7) } should completely reduce itself",
         {
             foo: [ValueCriterion.Equals.create(2)],
             bar: [ValueCriterion.In.create([3, 4]), ValueCriterion.Equals.create(7)]
@@ -34,27 +34,6 @@ export function runObjectCriterionCases(): void {
     );
 
     /**
-     * [todo] this should actually reduce to { foo == 2, bar != 3 }
-     * [A] is a subset of [B]
-     */
-    {
-        expectObjectCriterionReduction(
-            "{ foo == 2, bar == 3 } should reduce { foo == 2 } to { foo == 2, bar != 3 }",
-            {
-                foo: [ValueCriterion.Equals.create(2)],
-                bar: [ValueCriterion.Equals.create(3)]
-            },
-            {
-                foo: [ValueCriterion.Equals.create(2)]
-            },
-            {
-                foo: [ValueCriterion.Equals.create(2)],
-                bar: [ValueCriterion.NotEquals.create(3)]
-            }
-        );
-    }
-
-    /**
      * [A] doesn't intersect with [B]
      */
     expectObjectCriterionReduction(
@@ -69,7 +48,22 @@ export function runObjectCriterionCases(): void {
     );
 
     /**
-     * [A] shares a criterion but still doesn't intersect with [B]
+     * [A] is a subset of [B]
+     */
+    expectObjectCriterionReduction(
+        "{ foo == 2, bar == 3 } should not reduce { foo == 2 }",
+        {
+            foo: [ValueCriterion.Equals.create(2)],
+            bar: [ValueCriterion.Equals.create(3)]
+        },
+        {
+            foo: [ValueCriterion.Equals.create(3)]
+        },
+        "no-change"
+    );
+
+    /**
+     * [A] shares criteria but still doesn't intersect with [B]
      */
     expectObjectCriterionReduction(
         "{ foo == 2, bar == 4 } should not reduce { foo == 2, bar == 3 }",

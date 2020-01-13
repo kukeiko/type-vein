@@ -60,8 +60,4 @@ export module EqualsValueCriterion {
             default: return b;
         }
     }
-
-    export function invert(criterion: EqualsValueCriterion): NotEqualsValueCriterion {
-        return { op: "!=", value: criterion.value };
-    }
 }

@@ -24,9 +24,7 @@ export module PropertyCriterion {
     }
 }
 
-export interface ObjectCriterion {
-    [k: string]: ObjectCriterion.PropertyCriteria;
-}
+export type ObjectCriterion = Record<string, ObjectCriterion.PropertyCriteria>;
 
 export type ObjectCriteria = ObjectCriterion[];
 
@@ -42,18 +40,17 @@ export module ObjectCriterion {
     };
 
     export function reduce(a: ObjectCriterion, b: ObjectCriterion): ObjectCriterion | null {
-        // if [a] has more criteria than [b] we can just return [b]
-        if (Object.keys(a).length > Object.keys(b).length) {
-            // return b;
-        }
-
         let reducedPropertyCriteria: { key: string; reduced: ObjectCriterion.PropertyCriteria; } | undefined;
 
         for (let key in a) {
             let criteriaB = b[key];
 
-            if(criteriaB === void 0) {
-                continue;
+            /**
+             * [A] has a criteria that [B] doesn't, it therefore can't be a superset
+             * => return [B] as is
+             */
+            if (criteriaB === void 0) {
+                return b;
             }
 
             let criteriaA = a[key];
@@ -69,43 +66,29 @@ export module ObjectCriterion {
                 throw new Error("currently only ValueCriteria are supported @ ObjectCriterion.reduce()");
             }
 
-            if (reduced === criteriaB || (reduced !== null && reducedPropertyCriteria !== void 0)) {
+            if (reduced === criteriaB) {
+                /**
+                 * failed to reduce a property of [B] => return [B] as is.
+                 */
+                return b;
+            } else if (reduced !== null && reducedPropertyCriteria !== void 0) {
+                /**
+                 * reduced a property of [B] but we already reduced another, therefore [A] is no longer a superset of [B]
+                 * => return [B] as is
+                 */
                 return b;
             } else if (reduced !== null && reducedPropertyCriteria === void 0) {
+                /**
+                 * the first property of [B] that we could reduce => store and continue.
+                 * from this point on we're expecting full reductions in order to to continue,
+                 * otherwise [B] is returned as is.
+                 */
                 reducedPropertyCriteria = { key, reduced };
             }
         }
 
         if (reducedPropertyCriteria === void 0) {
-            let numCriteriaA = Object.keys(a).length;
-            let numCriteriaB = Object.keys(b).length;
-
-            if (numCriteriaA == numCriteriaB + 1) {
-                for (let key in a) {
-                    let criteriaA = a[key];
-                    let criteriaB = b[key];
-
-                    if (criteriaB !== void 0) {
-                        continue;
-                    }
-
-                    if (!ValueCriteria.is(criteriaA) || criteriaA.length > 1) {
-                        throw new Error("currently only ValueCriteria with one element are supported for inversion");
-                    }
-
-                    return {
-                        ...b,
-                        [key]: [ValueCriterion.invert(criteriaA[0])]
-                    };
-                }
-
-                return b;
-            } else if (numCriteriaA > numCriteriaB) {
-                // [todo] support this if possibru
-                return b;
-            } else {
-                return null;
-            }
+            return null;
         } else {
             return {
                 ...b,

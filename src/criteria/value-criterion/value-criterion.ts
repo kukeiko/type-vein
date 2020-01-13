@@ -59,15 +59,4 @@ export module ValueCriterion {
             default: throw new Error(`no reducer available for operation '${op}'`);
         }
     }
-
-    export function invert(criterion: ValueCriterion) : ValueCriterion {
-        return inverter(criterion.op)(criterion);
-    }
-    
-    export function inverter<OP extends ValueCriterion["op"]>(op: OP) : (a: Extract<ValueCriterion, { op: OP }>) => ValueCriterion {
-        switch(op) {
-            case "==": return Equals.invert as any;
-            default: throw new Error(`no inverter available for operation '${op}'`);
-        }
-    }
 }
