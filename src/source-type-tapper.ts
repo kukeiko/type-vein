@@ -40,17 +40,17 @@ export class SourceTypeTapper<ST extends SourceType, CTX extends Context, TT = D
 
             if (Property.isPrimitive(property)) {
                 if (!Context.has(property, this._context)) {
-                    throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
+                    throw new Error(`expected property '${property.key}' to have context '${this._context}'`);
                 }
 
                 if (property[this._context].optional === false) {
-                    throw new Error(`expected property '${property.key}' to be voidable for context '${this._context}'`);
+                    throw new Error(`expected property '${property.key}' to be optional for context '${this._context}'`);
                 }
 
                 this._selectProperty(property);
             } else if (Property.isComplex(property)) {
                 if (!Context.has(property, this._context)) {
-                    throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
+                    throw new Error(`expected property '${property.key}' to have context '${this._context}'`);
                 }
 
                 let type = this._getExpandableType(property);

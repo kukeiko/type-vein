@@ -13,22 +13,22 @@ export module Context {
     /**
      * Metadata about if the value of a property in a given Context is nullable and/or required.
      */
-    export interface Options<N extends boolean = false, V extends boolean = false> {
+    export interface Options<NULL extends boolean = false, OPT extends boolean = false> {
         /**
          * If the value of this property in this context can be set to null.
          */
-        nullable: N;
+        nullable: NULL;
 
         /**
          * If this property is required in this context.
          */
-        optional: V;
+        optional: OPT;
     }
 
     /**
      * A property that exists in the given context.
      */
-    export type Has<CTX extends Context, NULL extends boolean = any, VOID extends boolean = any> = Record<CTX, Options<NULL, VOID>>;
+    export type Has<CTX extends Context, NULL extends boolean = any, OPT extends boolean = any> = Record<CTX, Options<NULL, OPT>>;
 
     /**
      * A property that exists in the given context and is required.

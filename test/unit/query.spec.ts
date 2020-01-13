@@ -1,11 +1,10 @@
 import { SourceTypeSymbol, SourceType, Property, Query, TappedType, DefaultQuerySelection } from "../../src";
 
 describe("query", () => {
+    /**
+     * [notes] it works, but only if the custom methods are at the beginning of the chain
+     */
     it("should allow for extension by inheritance (while keeping chaining functionality)", () => {
-        /**
-         * [notes] it works, but only if the custom methods are at the beginning of the chain
-         */
-
         /**
          * [arrange]
          */
