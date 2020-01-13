@@ -1,6 +1,80 @@
 import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion, ValueCriteria } from "../../src";
 
 describe("playground", () => {
+    it("playing w/ composition @ query & tapper", () => {
+        class CoffeeCupType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCupType);
+            label = Property.create("label", String, b => b.loadable(["optional"]));
+            beans = Property.create("beans", CoffeeBeansType, b => b.loadable(["optional"]));
+            volume = Property.create("volume", Number, b => b.loadable(["optional"]));
+        }
+
+        class CoffeeBeansType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeBeansType);
+            origin = Property.create("origin", String, b => b.loadable(["optional"]));
+            tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
+        }
+
+        type DefaultSourceTypeTap<ST extends SourceType, CTX extends Context> = TapSourceType<ST, Context.IsRequired<CTX>>;
+
+        interface SourceTypeTap<ST extends SourceType = any, CTX extends Context = any, TT = DefaultSourceTypeTap<ST, CTX>> {
+            sourceType: ST;
+            context: CTX;
+            tappedType: TT;
+        }
+
+        // [todo] no longer sure why there is an Omit<S, P["key"]> 
+        function select<
+            STT extends SourceTypeTap,
+            P extends Property.Primitive & Context.IsOptional<STT["context"]>
+        >(
+            sourceTypeTap: STT,
+            select: (properties: STT["sourceType"]) => P
+        ): SourceTypeTap<STT["sourceType"], STT["context"], Omit<STT["tappedType"], P["key"]> & Record<P["key"], Context.ChangeOptional<P, STT["context"], false>>> {
+            return {} as any;
+        }
+
+        let stt: SourceTypeTap<CoffeeCupType, "loadable"> = {} as any;
+
+        select(select(stt, x => x.volume), x => x.label).tappedType.label;
+
+        type DefaultQuerySelection<T extends SourceType> = DefaultSourceTypeTap<T, "loadable">;
+
+        class Query<ST extends SourceType, TT extends TappedType<ST> = DefaultQuerySelection<ST>> {
+            sourceTypeTap!: SourceTypeTap<ST, "loadable", TT>;
+
+            select<P extends Property.Primitive & Context.IsOptional<"loadable">>(
+                select: (properties: this["sourceTypeTap"]["sourceType"]) => P
+            ): this & Omit<this, "sourceTypeTap"> & Record<"sourceTypeTap", SourceTypeTap<ST, "loadable", Omit<TT, P["key"]> & Record<P["key"], Context.ChangeOptional<P, "loadable", false>>>> {
+                // ): this & Omit<this, "sourceTypeTap"> {
+                return this as any;
+            }
+        }
+
+        class CoffeeCupTypeQuery extends Query<CoffeeCupType> {
+            selectLabel() {
+                return this.select(x => x.label);
+            }
+        }
+
+        let q = new Query<CoffeeCupType>();
+
+        q.select(x => x.label).sourceTypeTap.tappedType.label;
+
+        let coffeeQuery = new CoffeeCupTypeQuery();
+
+        /**
+         * we have a custom method after a native one!
+         */
+        let sourceTypeTap = coffeeQuery
+            .select(x => x.volume)
+            .selectLabel()
+            .sourceTypeTap;
+
+        sourceTypeTap.tappedType.label;
+        sourceTypeTap.tappedType.volume;
+    });
+
     it("playing with instance-loader", () => {
         class AlbumType {
             [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);
