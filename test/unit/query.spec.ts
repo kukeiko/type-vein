@@ -1,4 +1,4 @@
-import { SourceTypeSymbol, SourceType, Property, Query, TappedType, DefaultQuerySelection } from "../../src";
+import { SourceTypeSymbol, SourceType, Property, Query, TappedTypeSymbol } from "../../src";
 
 describe("query", () => {
     /**
@@ -12,7 +12,7 @@ describe("query", () => {
             [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCupType);
             label = Property.create("label", String, b => b.loadable(["optional"]));
             beans = Property.create("beans", CoffeeBeansType, b => b.loadable(["optional"]));
-            volume = Property.create("volume", Number, b => b.loadable(["optional"]));
+            volume = Property.create("volume", Number, b => b.loadable(["optional", "nullable"]));
         }
 
         class CoffeeBeansType {
@@ -21,22 +21,17 @@ describe("query", () => {
             tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
         }
 
-        // [todo] 'extends Selection<CoffeeCupType>' can possibly be removed in the future
-        class CoffeeCupTypeQuery<S extends TappedType<CoffeeCupType> = DefaultQuerySelection<CoffeeCupType>> extends Query<CoffeeCupType, S> {
+        class CoffeeCupTypeQuery extends Query<CoffeeCupType> {
             constructor() {
                 super(new CoffeeCupType());
             }
 
             includeLabel() {
-                let selectedType = this.include(s => s.select(x => x.label)).buildSelection();
-
-                return this as any as CoffeeCupTypeQuery<typeof selectedType>;
+                return this.include(s => s.select(x => x.label));
             }
 
             includeVolume() {
-                let selectedType = this.include(s => s.select(x => x.volume)).buildSelection();
-
-                return this as any as CoffeeCupTypeQuery<typeof selectedType>;
+                return this.include(s => s.select(x => x.volume));
             }
         }
 
@@ -52,8 +47,9 @@ describe("query", () => {
         /**
          * [assert] (compile time check only)
          */
-        queriedType.selected.volume;
-        queriedType.selected.label;
-        queriedType.selected.beans.value.tasty;
+        queriedType.tappedType[TappedTypeSymbol];
+        queriedType.tappedType.label;
+        queriedType.tappedType.volume;
+        queriedType.tappedType.beans.value.tasty;
     });
 });

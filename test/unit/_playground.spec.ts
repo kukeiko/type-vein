@@ -1,4 +1,4 @@
-import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion, ValueCriteria } from "../../src";
+import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion, ValueCriteria, Replace } from "../../src";
 
 describe("playground", () => {
     it("playing with instance-loader", () => {
@@ -28,8 +28,6 @@ describe("playground", () => {
         }
 
         let dumdidum = (x?: any): x is string => foo<string>(x) && foo<number>(x);
-
-        let x = TapSourceType.tap(new AlbumType(), Property.isComplex);
 
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
             load(loadable, criteria) {
@@ -129,7 +127,7 @@ describe("playground", () => {
             )
             .build();
 
-        let instance: Instance<typeof selectedType["selected"], "loadable"> = {
+        let instance: Instance<typeof selectedType["tappedType"], "loadable"> = {
             name: "foo",
             songs: [{
                 duration: true ? null : 3,

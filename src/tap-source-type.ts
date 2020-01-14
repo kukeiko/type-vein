@@ -23,9 +23,9 @@ export type TapSourceType<T extends SourceType, P = Property>
     & TappedSourceTypeProperties<T, P>;
 
 export module TapSourceType {
-    export function tap<ST extends SourceType, P extends Property = Property>(sourceType: ST, predicate: (p: Property) => p is P): TapSourceType<ST, P> {
-        return {} as any;
-    }
+    // export function tap<ST extends SourceType, P extends Property = Property>(sourceType: ST, predicate: (p: Property) => p is P): TapSourceType<ST, P> {
+    //     return {} as any;
+    // }
 
     /**
      * [todo] find a way to make this method generic, i.e. via a predicate (but still return a properly typed TappedType)
