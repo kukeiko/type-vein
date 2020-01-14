@@ -31,3 +31,5 @@ export type Unbox<T>
     : T extends Class ? InstanceType<T>
     : T extends (...args: any[]) => any ? ReturnType<T>
     : T;
+
+export type Replace<T, K extends keyof T, V> = Omit<T, K> & Record<K, V>;
