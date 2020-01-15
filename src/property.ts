@@ -43,8 +43,8 @@ export module Property {
     /**
      * The keys in T that point to a Property optionally extending P.
      */
-    export type Keys<T, P = Property, A extends boolean = false> = Exclude<({
-        [K in keyof T]: T[K] extends (Property & P) ? A extends true ? AliasOf<T[K]> : K : never;
+    export type Keys<T, P = Property, X = never> = Exclude<({
+        [K in keyof T]: T[K] extends X ? never : T[K] extends (Property & P) ? K : never;
     })[keyof T], undefined>;
 
     /**

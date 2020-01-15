@@ -7,20 +7,20 @@ import { Context } from "./context";
 /**
  * * [outdated] A property of a selection.
  */
-type TappedSourceTypeProperty<P extends Property, X = Property>
+type TappedSourceTypeProperty<P extends Property, X = Property, Z = never>
     = P["value"] extends Primitive ? P
-    : Property.ReplaceValue<P, TapSourceType<Unbox<P["value"]>, X>>;
+    : Property.ReplaceValue<P, TapSourceType<Unbox<P["value"]>, X, Z>>;
 
-type TappedSourceTypeProperties<T extends SourceType, P = Property> = {
-    [K in Property.Keys<T, P>]: TappedSourceTypeProperty<T[K], P>;
+type TappedSourceTypeProperties<T extends SourceType, P = Property, X = never> = {
+    [K in Property.Keys<T, P, X>]: TappedSourceTypeProperty<T[K], P, X>;
 };
 
 /**
  * [outdated] For a given type, take all properties that extend P. This is applied recursively onto expanded types.
  */
-export type TapSourceType<T extends SourceType, P = Property>
+export type TapSourceType<T extends SourceType, P = Property, X = never>
     = TappedType<T>
-    & TappedSourceTypeProperties<T, P>;
+    & TappedSourceTypeProperties<T, P, X>;
 
 export module TapSourceType {
     // export function tap<ST extends SourceType, P extends Property = Property>(sourceType: ST, predicate: (p: Property) => p is P): TapSourceType<ST, P> {
