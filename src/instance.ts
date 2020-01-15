@@ -5,16 +5,16 @@ import { Context } from "./context";
 
 export type BoxPropertyValue<P, V> = P extends Attribute.IsIterable ? V[] : V;
 
-export type InstancedValueOfProperty<P extends Property, CTX extends Context, X>
+export type InstancedValueOfProperty<P extends Property, CTX extends Context, IS, ISNOT>
     = P["value"] extends Primitive
     ? BoxPropertyValue<P, ReturnType<P["value"]>>
-    : BoxPropertyValue<P, Instance<Unbox<P["value"]>, CTX, X>>;
+    : BoxPropertyValue<P, Instance<Unbox<P["value"]>, CTX, IS, ISNOT>>;
 
-export type Instance<T, CTX extends Context, P = Property>
+export type Instance<T, CTX extends Context, IS = Property, ISNOT = never>
     = {
-        [K in Property.Keys<T, Context.IsRequired<CTX> & P>]: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, P>>;
+        [K in Property.Keys<T, Context.IsRequired<CTX> & IS>]: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS, ISNOT>>;
     } & {
-        [K in Property.Keys<T, Context.IsOptional<CTX> & P>]?: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, P>>;
+        [K in Property.Keys<T, Context.IsOptional<CTX> & IS>]?: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS,ISNOT>>;
     };
 
 export type AliasedInstancedValueOfProperty<P extends Property, CTX extends Context>

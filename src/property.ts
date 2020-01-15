@@ -8,6 +8,8 @@ import { PropertyBuilder } from "./property-builder";
  * ideally we can get rid of it cause it looks a bit weird.
  * 
  * on the other hand it is useful for quick runtime checking, since we don't have to check value against [Boolean, Number, String].
+ * 
+ * another alternative would be to implement it as an attribute.
  */
 export interface Property<K extends string = string, V = any, A extends string = K, P = V extends Primitive ? true : false> {
     alias: A;
@@ -36,15 +38,15 @@ export module Property {
     /**
      * The aliases of properties in T that optionally extend P.
      */
-    export type Aliases<T, P = Property> = Exclude<({
-        [K in keyof T]: T[K] extends (Property & P) ? AliasOf<T[K]> : never;
+    export type Aliases<T, IS = Property> = Exclude<({
+        [K in keyof T]: T[K] extends (Property & IS) ? AliasOf<T[K]> : never;
     })[keyof T], undefined>;
 
     /**
      * The keys in T that point to a Property optionally extending P.
      */
-    export type Keys<T, P = Property, X = never> = Exclude<({
-        [K in keyof T]: T[K] extends X ? never : T[K] extends (Property & P) ? K : never;
+    export type Keys<T, IS = Property, ISNOT = never> = Exclude<({
+        [K in keyof T]: T[K] extends ISNOT ? never : T[K] extends (Property & IS) ? K : never;
     })[keyof T], undefined>;
 
     /**
