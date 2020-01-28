@@ -1,4 +1,6 @@
 let npmCommand = process.env.npm_lifecycle_event;
+process.env.CHROME_BIN  =  require('puppeteer').executablePath();
+
 let browsers = ["ChromeHeadless"];
 let reporters = ["mocha"];
 let withCoverage = true;
