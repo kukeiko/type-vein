@@ -1,6 +1,60 @@
-import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion, ValueCriteria, Replace } from "../../src";
+import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, ValueCriterion, ValueCriteria, SourceTypeTapper, Primitive, Unbox } from "../../src";
 
 describe("playground", () => {
+    it("playing w/ unions", () => {
+        class CircleType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable());
+            radius = Property.create("radius", Number, b => b.loadable());
+            type = Property.create("type", "circle" as "circle", b => b.loadable());
+        }
+
+        class SquareType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable());
+            length = Property.create("length", Number, b => b.loadable());
+            type = Property.create("type", "square" as "square", b => b.loadable());
+        }
+
+        class CanvasType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
+            shapes = Property.create("shapes", [CircleType, SquareType], b => b.loadable().iterable());
+        }
+
+        let canvasInstance: Instance<CanvasType> = {
+            shapes: [
+                {
+                    type: "circle",
+                    area: 3.14 * 2 ^ 1,
+                    radius: 1
+                },
+                {
+                    type: "square",
+                    area: 25,
+                    length: 3
+                }
+            ]
+        }
+
+        let squareOrCircleInstance: Instance<SquareType, "loadable"> | Instance<CircleType, "loadable"> = {
+            type: "square",
+            area: 3,
+            length: 3
+        };
+
+        function takesUnionInstance(instance: Instance<CircleType> | Instance<SquareType>): void {
+            switch (instance.type) {
+                case "circle":
+                    let area = instance.area;
+                    break;
+
+                case "square":
+                    let length = instance.length;
+                    break;
+            }
+        }
+    });
+
     it("playing with instance-loader", () => {
         class AlbumType {
             [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);

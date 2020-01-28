@@ -5,12 +5,17 @@ import { Context } from "./context";
 
 export type BoxPropertyValue<P, V> = P extends Attribute.IsIterable ? V[] : V;
 
+export type UnionInstance<U, CTX extends Context = "loadable", IS = Property, ISNOT = never> = U extends any ? Instance<U, CTX, IS, ISNOT> : never;
+
 export type InstancedValueOfProperty<P extends Property, CTX extends Context, IS, ISNOT>
-    = P["value"] extends Primitive
-    ? BoxPropertyValue<P, ReturnType<P["value"]>>
+    = P["value"] extends Primitive ? BoxPropertyValue<P, ReturnType<P["value"]>>
+    : P["value"] extends string ? P["value"]
+    : P["value"] extends number ? P["value"]
+    : P["value"] extends any[] ? BoxPropertyValue<P, UnionInstance<Unbox<Unbox<P["value"]>>, CTX, IS, ISNOT>>
     : BoxPropertyValue<P, Instance<Unbox<P["value"]>, CTX, IS, ISNOT>>;
 
-export type Instance<T, CTX extends Context, IS = Property, ISNOT = never>
+
+export type Instance<T, CTX extends Context = "loadable", IS = Property, ISNOT = never>
     = {
         [K in Property.Keys<T, Context.IsRequired<CTX> & IS>]: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS, ISNOT>>;
     } & {
