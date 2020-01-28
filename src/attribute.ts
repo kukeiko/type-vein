@@ -4,6 +4,7 @@ interface Attributes {
     iterable: {
         sorted: boolean;
     };
+    navigable: true;
     unique: true;
 }
 
@@ -15,6 +16,7 @@ export module Attribute {
     export type IsFilterable = Has<"filterable">;
     export type IsIndexable = Has<"indexable">;
     export type IsIterable = Has<"iterable">;
+    export type IsNavigable = Has<"navigable">;
 
     export module Iterable {
         export type Value = Attributes["iterable"];
@@ -26,6 +28,7 @@ export module Attribute {
         filterable: true,
         indexable: true,
         iterable: true,
+        navigable: true,
         unique: true
     };
 

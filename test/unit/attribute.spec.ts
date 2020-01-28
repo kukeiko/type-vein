@@ -2,7 +2,7 @@ import { Attribute } from "../../src";
 
 describe("attribute", () => {
     it("allAttributes() should contain all the attributes shipped with type-vein", () => {
-        let expected: Attribute[] = ["filterable", "indexable", "iterable", "unique"];
+        let expected: Attribute[] = ["filterable", "indexable", "iterable", "navigable", "unique"];
         let actual = Attribute.all();
 
         expected.sort();
