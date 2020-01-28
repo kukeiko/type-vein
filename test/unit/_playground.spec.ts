@@ -1,4 +1,5 @@
 import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, ValueCriterion, ValueCriteria, SourceTypeTapper, Primitive, Unbox } from "../../src";
+import { EntitySet } from "../../src/entity-set";
 
 describe("playground", () => {
     it("playing w/ unions", () => {
@@ -84,7 +85,7 @@ describe("playground", () => {
         let dumdidum = (x?: any): x is string => foo<string>(x) && foo<number>(x);
 
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
-            load(loadable, criteria) {
+            async load(loadable, criteria) {
                 // expected to be false
                 loadable.releasedAt.loadable.optional;
                 loadable.songs.loadable.optional;
@@ -117,7 +118,7 @@ describe("playground", () => {
         };
 
         let anyTypeInstanceLoader: InstanceLoader<AlbumType | SongType> = {
-            load(loadable) {
+            async load(loadable) {
 
                 let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol];
 
@@ -310,10 +311,90 @@ describe("playground", () => {
         };
     });
 
-    it("playing with entity-store", () => {
-        class FooType {
-            [SourceTypeSymbol] = SourceType.createMetadata(FooType);
+    it("playing w/ expansion", () => {
+        class Selector<T, CTX extends Context, S = {}> {
+            constructor(type: T, context: CTX) { }
+
+            select<P extends Property.Primitive & Context.IsOptional<CTX>>(
+                select: (properties: T) => P
+            ): Selector<T, CTX, S & Record<P["key"], true>>;
+
+            select<P extends Property.Complex & Context.IsOptional<CTX>, O>(
+                select: (properties: T) => P,
+                expand: (selector: Selector<Unbox<P["value"]>, CTX>) => Selector<Unbox<P["value"]>, CTX, O>
+            ): Selector<T, CTX, S & Record<P["key"], O>>;
+
+            select(...args: any[]): any {
+                return this;
+            }
+
+            build(): S {
+                return {} as any;
+            }
         }
+
+        class CoffeeCup {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCup);
+            beans = Property.create("beans", CoffeeBeans, b => b.loadable(["optional"]));
+            color = Property.create("color", String, b => b.loadable());
+            label = Property.create("label", String, b => b.loadable(["optional"]));
+            volume = Property.create("volume", Number, b => b.loadable(["optional", "nullable"]));
+        }
+
+        class CoffeeBeans {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeBeans);
+            origin = Property.create("origin", String, b => b.loadable(["optional"]));
+            tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
+        }
+
+        type ExpandedValue<P extends Property, CTX extends Context>
+            = P["value"] extends Primitive ? true
+            : true | Expansion<Unbox<P["value"]>, CTX>;
+
+        type Expansion<ST, CTX extends Context> = {
+            [K in Property.Keys<ST, Context.Has<CTX, any, true>>]?: ExpandedValue<ST[K], CTX>;
+        };
+
+        let selector = new Selector(new CoffeeCup(), "loadable")
+            // .select(x => x.label)
+            // .select(x => x.volume)
+            .select(x => x.beans, x => x.select(x => x.origin))
+            ;
+
+        let selected = selector.build();
+
+        let selectedInstance: Instance<CoffeeCup, "loadable", Property, never, typeof selected> = {
+            // label: "foo",
+            beans: {
+                origin: "Africa"
+            },
+            color: "black",
+        }
+    });
+
+    it("playing with entity-set", () => {
+        class CoffeeCupType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCupType);
+            label = Property.create("label", String, b => b.loadable(["optional"]));
+            beans = Property.create("beans", CoffeeBeansType, b => b.loadable(["optional"]));
+            volume = Property.create("volume", Number, b => b.loadable(["optional", "nullable"]));
+        }
+
+        class CoffeeBeansType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeBeansType);
+            origin = Property.create("origin", String, b => b.loadable(["optional"]));
+            tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
+        }
+
+        let coffeeCupTypeEntitySet = new EntitySet(new CoffeeCupType(), "loadable");
+        let tapper = new SourceTypeTapper(new CoffeeCupType(), "loadable");
+
+        let tappedTypeWithVolume = tapper.select(x => x.volume).build();
+        coffeeCupTypeEntitySet.get(tappedTypeWithVolume)[0].volume;
+
+        let tappedTypeWithVolumeAndLabel = tapper.select(x => x.volume).select(x => x.label).build();
+        coffeeCupTypeEntitySet.get(tappedTypeWithVolumeAndLabel)[0].volume;
+        coffeeCupTypeEntitySet.get(tappedTypeWithVolumeAndLabel)[0].label;
     });
 
     it("playing with criteria", () => {

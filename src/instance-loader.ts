@@ -7,7 +7,7 @@ import { Property } from "./property";
 import { Primitive, Unbox } from "./lang";
 
 export interface InstanceLoader<T extends SourceType> {
-    load(loadable: InstanceLoader.Loadable<T>, criteria: ObjectCriterion.ForType<T>[]): Map<string | number, Instance<T, "loadable">>;
+    load(loadable: InstanceLoader.Loadable<T>, criteria: ObjectCriterion.ForType<T>[]): Promise<InstanceLoader.Result<T>>;
 }
 
 export module InstanceLoader {
@@ -23,4 +23,6 @@ export module InstanceLoader {
         & {
             [K in Property.Keys<ST, Context.IsOptional<"loadable">>]?: LoadableProperty<ST[K], "loadable">;
         };
+
+    export type Result<T> = Map<string | number, Instance<T, "loadable">>;
 }
