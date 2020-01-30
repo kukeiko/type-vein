@@ -1,4 +1,4 @@
-import { Primitive } from "./lang";
+import { Primitive, Unbox } from "./lang";
 import { SourceType } from "./source-type";
 import { TappedType } from "./tapped-type";
 import { PropertyBuilder } from "./property-builder";
@@ -60,6 +60,8 @@ export module Property {
     export type Aliased<T, A extends string> = T[KeyOfAliased<T, A>] extends Property ? T[KeyOfAliased<T, A>] : never;
 
     export type Primitive<K extends string = string, V = any, A extends string = K> = Property<K, V, A, true>;
+
+    export type UnboxedValue<P extends Property> = Unbox<Unbox<P["value"]>>;
 
     export function isPrimitive(p: any): p is Primitive {
         return is(p) && p.primitive === true;

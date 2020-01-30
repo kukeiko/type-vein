@@ -5,14 +5,14 @@ import { Context } from "./context";
 
 export type BoxPropertyValue<P, V> = P extends Attribute.IsIterable ? V[] : V;
 
-export type UnionInstance<U, CTX extends Context = "loadable", IS = Property, ISNOT = never> = U extends any ? Instance<U, CTX, IS, ISNOT> : never;
+export type UnionInstance<U, CTX extends Context = "loadable", IS = Property, ISNOT = never, EXP = {}> = U extends any ? Instance<U, CTX, IS, ISNOT, EXP> : never;
 
 export type InstancedValueOfProperty<P, CTX extends Context, IS, ISNOT, EXP = {}>
     = P extends Property ?
     P["value"] extends Primitive ? BoxPropertyValue<P, ReturnType<P["value"]>>
     : P["value"] extends string ? P["value"]
     : P["value"] extends number ? P["value"]
-    : P["value"] extends any[] ? BoxPropertyValue<P, UnionInstance<Unbox<Unbox<P["value"]>>, CTX, IS, ISNOT>>
+    : P["value"] extends any[] ? BoxPropertyValue<P, UnionInstance<Unbox<Unbox<P["value"]>>, CTX, IS, ISNOT, EXP>>
     : BoxPropertyValue<P, Instance<Unbox<P["value"]>, CTX, IS, ISNOT, EXP>>
     : never;
 
@@ -31,6 +31,10 @@ export type Instance<T, CTX extends Context = "loadable", IS = Property, ISNOT =
     } & {
         [K in Exclude<Property.Keys<T, Context.IsOptional<CTX> & IS>, keyof EXP>]?: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS, ISNOT>>;
     };
+
+export module Instance {
+    export type Selected<T, S, CTX extends Context = "loadable", IS = Property, ISNOT = never> = Instance<T, CTX, IS, ISNOT, S>;
+}
 
 export type AliasedInstancedValueOfProperty<P extends Property, CTX extends Context>
     = P["value"] extends Primitive ? BoxPropertyValue<P, ReturnType<P["value"]>>
