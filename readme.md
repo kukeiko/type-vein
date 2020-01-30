@@ -1,5 +1,13 @@
 # type-vein
-Strictly typed data framework for consuming HTTP services. cache hit test.
+Strictly typed data framework for consuming HTTP services.
+
+Serves a similar purpose as GraphQL, but is actually inspired by the LightSwitch OData implementation which has been discontinued in 2015. Type-Vein is a successor to https://github.com/kukeiko/entity-space. 
+
+Types are defined by specifying their properties and what you can do with them (loadable, creatable, patchable, nullable, optional, ...). With queries you define the tree of entities you want to load (Selection) and how to filter them (Criteria). The actual loading logic has to be implemented by the developer.
+
+# Status
+Very much work in progress. Immediate goal is to query some data with basic filtering, loaded from an http service.
+
 # FAQ
 
 **Q:** I have the following error when I try to 
