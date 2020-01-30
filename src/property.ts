@@ -1,6 +1,5 @@
 import { Primitive, Unbox } from "./lang";
 import { SourceType } from "./source-type";
-import { TappedType } from "./tapped-type";
 import { PropertyBuilder } from "./property-builder";
 
 /**
@@ -19,7 +18,7 @@ export interface Property<K extends string = string, V = any, A extends string =
 }
 
 export module Property {
-    export function pick<T extends SourceType | TappedType>(type: T, predicate: (p: Property) => boolean = () => true): Record<string, Property> {
+    export function pick<T extends SourceType>(type: T, predicate: (p: Property) => boolean = () => true): Record<string, Property> {
         let fields: Record<string, Property> = {};
 
         for (let k in type) {

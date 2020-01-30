@@ -1,10 +1,9 @@
 import { Context } from "./context";
 import { SourceType } from "./source-type";
-import { TappedType } from "./tapped-type";
 import { Property } from "./property";
 
 export class Instancer {
-    create(type: SourceType | TappedType, context: Context): any {
+    create(type: SourceType, context: Context): any {
         let properties = Property.pick(type);
         let instance = {};
 

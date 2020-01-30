@@ -1,43 +1,41 @@
 import { SourceType } from "./source-type";
-import { SourceTypeTapper, DefaultSourceTypeTap } from "./source-type-tapper";
 import { CriteraBuilder } from "./criteria-builder";
-import { TappedType } from "./tapped-type";
 import { Replace } from "./lang";
+import { Selector } from "./selector";
 
-export type QueriedType<ST extends SourceType, TT extends TappedType<ST>, C extends CriteraBuilder<TT, "loadable">> = {
-    sourceType: ST;
-    tappedType: TT;
-    criteria: C;
+export type QueriedType<T extends SourceType, S> = {
+    type: T;
+    selection: S;
+    criteria: CriteraBuilder<T, "loadable">;
 };
 
-export type DefaultQuerySelection<T extends SourceType> = DefaultSourceTypeTap<T, "loadable">;
-
-export class Query<ST extends SourceType> {
-    constructor(sourceType: ST) {
-        this.sourceType = sourceType;
-        this.tapper = new SourceTypeTapper(sourceType, "loadable");
+export class Query<T extends SourceType> {
+    constructor(type: T) {
+        this.type = type;
+        this.selector = new Selector(type, "loadable");
     }
 
-    readonly sourceType: ST;
-    readonly tapper: SourceTypeTapper<ST, "loadable">;
+    readonly type: T;
+    readonly selector: Selector<T, "loadable">;
 
-    include<O>(select: (selector: SourceTypeTapper<ST, "loadable", ReturnType<this["tapper"]["build"]>>) => SourceTypeTapper<ST, "loadable", O>): this & Replace<this, "tapper", SourceTypeTapper<ST, "loadable", O>> {
-        select(this.tapper as any);
+    include<O>(select: (selector: Selector<T, "loadable", ReturnType<this["selector"]["build"]>>) => Selector<T, "loadable", O>)
+        : this & Replace<this, "selector", Selector<T, "loadable", O>> {
+        select(this.selector as any);
         return this as any;
     }
 
-    where(filter: (criteriaBuilder: CriteraBuilder<ReturnType<this["tapper"]["build"]>, "loadable">) => any): this;
-    where(operand: "and" | "or", filter: (criteriaBuilder: CriteraBuilder<ReturnType<this["tapper"]["build"]>, "loadable">) => any): this;
+    where(filter: (criteriaBuilder: CriteraBuilder<T, "loadable">) => any): this;
+    where(operand: "and" | "or", filter: (criteriaBuilder: CriteraBuilder<T, "loadable">) => any): this;
 
     where(...args: any[]): this {
         return this;
     }
 
-    build(): QueriedType<ST, ReturnType<this["tapper"]["build"]>, CriteraBuilder<ReturnType<this["tapper"]["build"]>, "loadable">> {
+    build(): QueriedType<T, ReturnType<this["selector"]["build"]>> {
         return {
-            sourceType: this.sourceType,
-            tappedType: this.tapper.build() as ReturnType<this["tapper"]["build"]>,
-            criteria: {} as CriteraBuilder<ReturnType<this["tapper"]["build"]>, "loadable">
+            type: this.type,
+            selection: this.selector.build() as ReturnType<this["selector"]["build"]>,
+            criteria: {} as CriteraBuilder<T, "loadable">
         };
     }
 }

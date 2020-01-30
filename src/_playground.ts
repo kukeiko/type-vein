@@ -2,7 +2,6 @@ import { Instance, AliasedInstance } from "./instance";
 import { SourceType, SourceTypeSymbol } from "./source-type";
 import { Property } from "./property";
 import { Context } from "./context";
-import { SourceTypeTapper } from "./source-type-tapper";
 
 class AlbumType {
     [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);
@@ -56,11 +55,3 @@ function takesFooTypeInstance(instance: Instance<FooType, "loadable">): void {
         // do stuff
     }
 }
-
-let selectedFooType = new SourceTypeTapper(new FooType(), "loadable").build();
-
-let selectedFooTypeInstance: Instance<typeof selectedFooType, "loadable"> = {
-    bar: "cozy-clouds"
-};
-
-takesFooTypeInstance(selectedFooTypeInstance); // works!

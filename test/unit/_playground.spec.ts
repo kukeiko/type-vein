@@ -1,9 +1,9 @@
-import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, ValueCriterion, ValueCriteria, SourceTypeTapper, Primitive, Unbox } from "../../src";
+import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, Context, ValueCriterion, ValueCriteria, Primitive, Unbox } from "../../src";
 import { EntitySet } from "../../src/entity-set";
 import { Selection } from "../../src/selection";
 import { Selector } from "../../src/selector";
 
-fdescribe("playground", () => {
+describe("playground", () => {
     it("playing w/ unions", () => {
         class CircleType {
             [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
@@ -108,62 +108,62 @@ fdescribe("playground", () => {
 
         let dumdidum = (x?: any): x is string => foo<string>(x) && foo<number>(x);
 
-        let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
-            async load(loadable, criteria) {
-                // expected to be false
-                loadable.releasedAt.loadable.optional;
-                loadable.songs.loadable.optional;
-                loadable.songs.value.duration.loadable.optional;
-                loadable.artist?.value.name.loadable.optional;
+        // let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
+        //     async load(loadable, criteria) {
+        //         // expected to be false
+        //         loadable.releasedAt.loadable.optional;
+        //         loadable.songs.loadable.optional;
+        //         loadable.songs.value.duration.loadable.optional;
+        //         loadable.artist?.value.name.loadable.optional;
 
-                // expected to be boolean
-                loadable.name?.loadable.optional;
-                loadable.artist?.loadable.optional;
-                loadable.artist?.value.age?.loadable.optional;
-                loadable.songs.value.album?.loadable.optional;
+        //         // expected to be boolean
+        //         loadable.name?.loadable.optional;
+        //         loadable.artist?.loadable.optional;
+        //         loadable.artist?.value.age?.loadable.optional;
+        //         loadable.songs.value.album?.loadable.optional;
 
-                loadable.songs?.value[TappedTypeSymbol].source[SourceTypeSymbol].class;
+        //         loadable.songs?.value[TappedTypeSymbol].source[SourceTypeSymbol].class;
 
-                new loadable[TappedTypeSymbol].source[SourceTypeSymbol].class();
-                let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
-                loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
-                loadable.songs?.value[TappedTypeSymbol].source;
+        //         new loadable[TappedTypeSymbol].source[SourceTypeSymbol].class();
+        //         let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
+        //         loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
+        //         loadable.songs?.value[TappedTypeSymbol].source;
 
-                for (let k in loadable) {
+        //         for (let k in loadable) {
 
-                }
+        //         }
 
-                return new Map([
-                    [1, {
+        //         return new Map([
+        //             [1, {
 
-                    } as any]
-                ]);
-            }
-        };
+        //             } as any]
+        //         ]);
+        //     }
+        // };
 
-        let anyTypeInstanceLoader: InstanceLoader<AlbumType | SongType> = {
-            async load(loadable) {
+        // let anyTypeInstanceLoader: InstanceLoader<AlbumType | SongType> = {
+        //     async load(loadable) {
 
-                let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol];
+        //         let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol];
 
-                if (metadata.class === AlbumType) {
+        //         if (metadata.class === AlbumType) {
 
-                    new metadata.class().releasedAt.key;
-                }
-                // if (metadata.class === AlbumType) {
+        //             new metadata.class().releasedAt.key;
+        //         }
+        //         // if (metadata.class === AlbumType) {
 
-                // }
-                // if (type[Blueprint.$Symbol].class === AlbumType) {
-                //     // new type[Blueprint.$Symbol].class().
-                // }
+        //         // }
+        //         // if (type[Blueprint.$Symbol].class === AlbumType) {
+        //         //     // new type[Blueprint.$Symbol].class().
+        //         // }
 
-                return new Map([
-                    [1, {
-                        name: "foo"
-                    }]
-                ]);
-            }
-        };
+        //         return new Map([
+        //             [1, {
+        //                 name: "foo"
+        //             }]
+        //         ]);
+        //     }
+        // };
     });
 
     it("playing with instance-loader #2", () => {
@@ -336,7 +336,7 @@ fdescribe("playground", () => {
             )
             .build();
 
-        let instance: Instance<typeof selectedType["tappedType"], "loadable"> = {
+        let instance: Instance.Selected<AlbumType, typeof selectedType["selection"]> = {
             name: "foo",
             songs: [{
                 duration: true ? null : 3,
@@ -411,8 +411,7 @@ fdescribe("playground", () => {
         type MakePropertyRequired<P extends Context.Has<C>, C extends Context> = P[C]["optional"] extends true ? Context.ChangeOptional<P, C, false> : P;
 
         type MakePropertiesRequired<T extends SourceType, C extends Context, P = Property>
-            = TappedType<T>
-            & {
+            = {
                 [K in Property.Keys<T, P & Context.Has<C>>]: MakePropertyRequired<T[K], C>;
             };
 
@@ -574,15 +573,13 @@ fdescribe("playground", () => {
         }
 
         let coffeeCupTypeEntitySet = new EntitySet(new CoffeeCupType(), "loadable");
-        let tapper = new SourceTypeTapper(new CoffeeCupType(), "loadable");
 
         try {
-            let tappedTypeWithVolume = tapper.select(x => x.volume).build();
-            coffeeCupTypeEntitySet.get(tappedTypeWithVolume)[0].volume;
-
-            let tappedTypeWithVolumeAndLabel = tapper.select(x => x.volume).select(x => x.label).build();
-            coffeeCupTypeEntitySet.get(tappedTypeWithVolumeAndLabel)[0].volume;
-            coffeeCupTypeEntitySet.get(tappedTypeWithVolumeAndLabel)[0].label;
+            // [todo] beans should exist on type maybe?
+            coffeeCupTypeEntitySet.get()[0].beans;
+            coffeeCupTypeEntitySet.get()[0].volume;
+            coffeeCupTypeEntitySet.get()[0].volume;
+            coffeeCupTypeEntitySet.get()[0].label;
         } catch (error) {
             // on purpose since implementation is still missing
         }

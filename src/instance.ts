@@ -25,11 +25,11 @@ export type ExpandedKeys<EXP> = Exclude<({
 
 export type Instance<T, CTX extends Context = "loadable", IS = Property, ISNOT = never, EXP = {}>
     = {
-        [K in Property.Keys<T, Context.IsRequired<CTX> & IS>]: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS, ISNOT>>;
+        [K in Property.Keys<T, Context.IsRequired<CTX> & IS, ISNOT>]: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS, ISNOT>>;
     } & {
-        [K in Property.Keys<T> & keyof EXP]: Exclude<WidenedInstancedValueOfProperty<T[K], CTX, EXP[K]>, undefined>;
+        [K in Property.Keys<T, IS, ISNOT> & keyof EXP]: Exclude<WidenedInstancedValueOfProperty<T[K], CTX, EXP[K]>, undefined>;
     } & {
-        [K in Exclude<Property.Keys<T, Context.IsOptional<CTX> & IS>, keyof EXP>]?: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS, ISNOT>>;
+        [K in Exclude<Property.Keys<T, Context.IsOptional<CTX> & IS, ISNOT>, keyof EXP>]?: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, IS, ISNOT>>;
     };
 
 export module Instance {

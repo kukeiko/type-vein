@@ -15,6 +15,7 @@
             "jasmine"
         ],
         "lib": [
+            "DOM",
             "scripthost",
             "es2015",
             "es2016.array.include"
