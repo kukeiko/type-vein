@@ -1,6 +1,85 @@
-import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion, ValueCriteria, Replace } from "../../src";
+import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, Context, ValueCriterion, ValueCriteria, Primitive, Unbox } from "../../src";
+import { EntitySet } from "../../src/entity-set";
+import { Selection } from "../../src/selection";
+import { Selector } from "../../src/selector";
 
 describe("playground", () => {
+    it("playing w/ unions", () => {
+        class CircleType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable());
+            radius = Property.create("radius", Number, b => b.loadable());
+            type = Property.create("type", "circle" as "circle", b => b.loadable());
+        }
+
+        class SquareType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable());
+            length = Property.create("length", Number, b => b.loadable());
+            type = Property.create("type", "square" as "square", b => b.loadable());
+        }
+
+        class CanvasType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
+            shapes = Property.create("shapes", [CircleType, SquareType], b => b.loadable().iterable());
+        }
+
+        /**
+         * here we're making sure that we have to supply supply all the
+         * required properties of a type after discriminating it by setting the "type"
+         * property (in this case to either "circle" or "square")
+         */
+        let squareOrCircleInstance_Square: Instance<SquareType, "loadable"> | Instance<CircleType, "loadable"> = {
+            type: "square",
+            area: 3,
+            length: 3
+        };
+
+        let squareOrCircleInstance_Circle: Instance<SquareType, "loadable"> | Instance<CircleType, "loadable"> = {
+            type: "circle",
+            area: 3,
+            radius: 2
+        };
+
+        /**
+         * union is nested within another type
+         */
+        let canvasInstance: Instance<CanvasType> = {
+            shapes: [
+                {
+                    type: "circle",
+                    area: 7,
+                    radius: 1
+                },
+                {
+                    type: "square",
+                    area: 25,
+                    length: 3
+                },
+                {
+                    type: "circle",
+                    area: 54,
+                    radius: 3
+                },
+            ]
+        }
+
+        /**
+         * discriminate union in a switch
+         */
+        function takesUnionInstance(instance: Instance<CircleType> | Instance<SquareType>): void {
+            switch (instance.type) {
+                case "circle":
+                    let area = instance.area;
+                    break;
+
+                case "square":
+                    let length = instance.length;
+                    break;
+            }
+        }
+    });
+
     it("playing with instance-loader", () => {
         class AlbumType {
             [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);
@@ -29,62 +108,192 @@ describe("playground", () => {
 
         let dumdidum = (x?: any): x is string => foo<string>(x) && foo<number>(x);
 
-        let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
-            load(loadable, criteria) {
-                // expected to be false
-                loadable.releasedAt.loadable.optional;
-                loadable.songs.loadable.optional;
-                loadable.songs.value.duration.loadable.optional;
-                loadable.artist?.value.name.loadable.optional;
+        // let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
+        //     async load(loadable, criteria) {
+        //         // expected to be false
+        //         loadable.releasedAt.loadable.optional;
+        //         loadable.songs.loadable.optional;
+        //         loadable.songs.value.duration.loadable.optional;
+        //         loadable.artist?.value.name.loadable.optional;
 
-                // expected to be boolean
-                loadable.name?.loadable.optional;
-                loadable.artist?.loadable.optional;
-                loadable.artist?.value.age?.loadable.optional;
-                loadable.songs.value.album?.loadable.optional;
+        //         // expected to be boolean
+        //         loadable.name?.loadable.optional;
+        //         loadable.artist?.loadable.optional;
+        //         loadable.artist?.value.age?.loadable.optional;
+        //         loadable.songs.value.album?.loadable.optional;
 
-                loadable.songs?.value[TappedTypeSymbol].source[SourceTypeSymbol].class;
+        //         loadable.songs?.value[TappedTypeSymbol].source[SourceTypeSymbol].class;
 
-                new loadable[TappedTypeSymbol].source[SourceTypeSymbol].class();
-                let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
-                loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
-                loadable.songs?.value[TappedTypeSymbol].source;
+        //         new loadable[TappedTypeSymbol].source[SourceTypeSymbol].class();
+        //         let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
+        //         loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
+        //         loadable.songs?.value[TappedTypeSymbol].source;
 
-                for (let k in loadable) {
+        //         for (let k in loadable) {
 
+        //         }
+
+        //         return new Map([
+        //             [1, {
+
+        //             } as any]
+        //         ]);
+        //     }
+        // };
+
+        // let anyTypeInstanceLoader: InstanceLoader<AlbumType | SongType> = {
+        //     async load(loadable) {
+
+        //         let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol];
+
+        //         if (metadata.class === AlbumType) {
+
+        //             new metadata.class().releasedAt.key;
+        //         }
+        //         // if (metadata.class === AlbumType) {
+
+        //         // }
+        //         // if (type[Blueprint.$Symbol].class === AlbumType) {
+        //         //     // new type[Blueprint.$Symbol].class().
+        //         // }
+
+        //         return new Map([
+        //             [1, {
+        //                 name: "foo"
+        //             }]
+        //         ]);
+        //     }
+        // };
+    });
+
+    it("playing with instance-loader #2", () => {
+        // arrange
+        class AuthorType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
+            id = Property.create("id", Number, b => b.loadable());
+            name = Property.create("name", String, b => b.loadable(["optional"]));
+        }
+
+        class CircleType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable(["optional"]));
+            radius = Property.create("radius", Number, b => b.loadable(["optional"]));
+            type = Property.create("type", "circle" as "circle", b => b.loadable());
+        }
+
+        class SquareType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable(["optional"]));
+            length = Property.create("length", Number, b => b.loadable(["optional"]));
+            type = Property.create("type", "square" as "square", b => b.loadable());
+        }
+
+        class CanvasType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
+            author = Property.create("author", AuthorType, b => b.loadable(["optional"]));
+            name = Property.create("name", String, b => b.loadable());
+            shapes = Property.create("shapes", [CircleType, SquareType], b => b.loadable(["optional"]).iterable());
+        }
+
+        // act
+        class CanvasInstanceLoader {
+            load<S extends Selection<CanvasType>>(selection: S): Instance.Selected<CanvasType, S>[] {
+                // load<S extends Selection<CanvasType>>(selection: S) {
+                //instance with all baseline required properties
+                let canvas: Instance<CanvasType> = {
+                    name: "A Sun and a Square"
+                };
+
+                // include properties based on the given selection
+                if (selection.author) {
+                    canvas.author = {
+                        id: 7
+                    };
+
+                    if (selection.author.name) {
+                        canvas.author.name = "Susi Sonne";
+                    }
                 }
 
-                return new Map([
-                    [1, {
+                if (selection.shapes) {
+                    const sunShape: Instance<CircleType> = {
+                        type: "circle"
+                    };
 
-                    } as any]
-                ]);
-            }
-        };
+                    const squareShape: Instance<SquareType> = {
+                        type: "square"
+                    };
 
-        let anyTypeInstanceLoader: InstanceLoader<AlbumType | SongType> = {
-            load(loadable) {
+                    // check selections for properties common across all shapes
+                    if (selection.shapes.area) {
+                        sunShape.area = Math.PI * 12;
+                        squareShape.area = 25;
+                    }
 
-                let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol];
+                    // check selections for properties only on circle shapes
+                    const circleSelection = selection.shapes as Selection<CircleType>;
 
-                if (metadata.class === AlbumType) {
+                    if (circleSelection.radius) {
+                        sunShape.radius = 12;
+                    }
 
-                    new metadata.class().releasedAt.key;
+                    // check selections for properties only on square shapes
+                    const squareSelection = selection.shapes as Selection<SquareType>;
+
+                    if (squareSelection.length) {
+                        squareShape.length = 5;
+                    }
+
+                    canvas.shapes = [sunShape, squareShape];
                 }
-                // if (metadata.class === AlbumType) {
 
-                // }
-                // if (type[Blueprint.$Symbol].class === AlbumType) {
-                //     // new type[Blueprint.$Symbol].class().
-                // }
-
-                return new Map([
-                    [1, {
-                        name: "foo"
-                    }]
-                ]);
+                return [canvas] as Instance.Selected<CanvasType, S>[];
             }
-        };
+        }
+
+
+
+        // creating a selector for helping us create a customly typed selection
+        const selector = new Selector(new CanvasType(), "loadable");
+
+        // picking the properties we want to have included
+        const selection = selector
+            .select(canvas => canvas.author, s => s
+                .select(author => author.name)
+            )
+            .select(canvas => canvas.shapes, s => s
+                .select(shape => shape.area)
+            )
+            .select(canvas => canvas.shapes, () => CircleType, s => s
+                .select(circle => circle.radius)
+            )
+            .select(canvas => canvas.shapes, () => SquareType, s => s
+                .select(circle => circle.length)
+            )
+            .build();
+
+        const loader = new CanvasInstanceLoader();
+        const instances = loader.load(selection);
+
+        // assert
+        for (let instance of instances) {
+            expect(instance.author.name).toBeDefined();
+            expect(instance.shapes).toBeDefined();
+
+            for (let shape of instance.shapes) {
+                expect(shape.area).toBeDefined();
+
+                switch (shape.type) {
+                    case "circle":
+                        expect(shape.radius).toBeDefined();
+                        break;
+
+                    case "square":
+                        expect(shape.length).toBeDefined();
+                        break;
+                }
+            }
+        }
     });
 
     it("playing with query", () => {
@@ -127,7 +336,7 @@ describe("playground", () => {
             )
             .build();
 
-        let instance: Instance<typeof selectedType["tappedType"], "loadable"> = {
+        let instance: Instance.Selected<AlbumType, typeof selectedType["selection"]> = {
             name: "foo",
             songs: [{
                 duration: true ? null : 3,
@@ -202,8 +411,7 @@ describe("playground", () => {
         type MakePropertyRequired<P extends Context.Has<C>, C extends Context> = P[C]["optional"] extends true ? Context.ChangeOptional<P, C, false> : P;
 
         type MakePropertiesRequired<T extends SourceType, C extends Context, P = Property>
-            = TappedType<T>
-            & {
+            = {
                 [K in Property.Keys<T, P & Context.Has<C>>]: MakePropertyRequired<T[K], C>;
             };
 
@@ -256,9 +464,124 @@ describe("playground", () => {
         };
     });
 
-    it("playing with entity-store", () => {
-        class FooType {
-            [SourceTypeSymbol] = SourceType.createMetadata(FooType);
+    it("playing w/ expansion", () => {
+        class AuthorType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
+            id = Property.create("id", Number, b => b.loadable());
+            name = Property.create("name", String, b => b.loadable(["optional"]));
+        }
+
+        class CircleType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable(["optional"]));
+            radius = Property.create("radius", Number, b => b.loadable(["optional"]));
+            type = Property.create("type", "circle" as "circle", b => b.loadable());
+        }
+
+        class SquareType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            area = Property.create("area", Number, b => b.loadable(["optional"]));
+            length = Property.create("length", Number, b => b.loadable(["optional"]));
+            type = Property.create("type", "square" as "square", b => b.loadable());
+        }
+
+        class CanvasType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
+            author = Property.create("author", AuthorType, b => b.loadable(["optional"]));
+            name = Property.create("name", String, b => b.loadable());
+            shapes = Property.create("shapes", [CircleType, SquareType], b => b.loadable(["optional"]).iterable());
+        }
+
+        let canvasSelector = new Selector(new CanvasType(), "loadable");
+
+        let selectedCanvas = canvasSelector
+            .select(x => x.shapes, x => x.select(x => x.area))
+            .select(x => x.shapes, () => SquareType, x => x.select(x => x.length))
+            .select(x => x.shapes, () => CircleType, x => x.select(x => x.radius))
+            .select(x => x.author)
+            .select(x => x.author, x => x.select(x => x.name))
+            .build();
+
+        let canvasInstance: Instance<CanvasType, "loadable", Property, never, typeof selectedCanvas> = {
+            name: "foo",
+            shapes: [{
+                type: "square",
+                length: 3,
+                area: 3
+            }, {
+                type: "circle",
+                area: 123,
+                radius: 4
+            }],
+            author: {
+                id: 3,
+                name: "susi"
+            }
+        };
+
+        class CoffeeCup {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCup);
+            beans = Property.create("beans", CoffeeBeans, b => b.loadable(["optional"]));
+            color = Property.create("color", String, b => b.loadable());
+            label = Property.create("label", String, b => b.loadable(["optional"]));
+            volume = Property.create("volume", Number, b => b.loadable(["optional", "nullable"]));
+        }
+
+        class CoffeeBeans {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeBeans);
+            origin = Property.create("origin", String, b => b.loadable(["optional"]));
+            tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
+        }
+
+        type ExpandedValue<P extends Property, CTX extends Context>
+            = P["value"] extends Primitive ? true
+            : true | Expansion<Unbox<P["value"]>, CTX>;
+
+        type Expansion<ST, CTX extends Context> = {
+            [K in Property.Keys<ST, Context.Has<CTX, any, true>>]?: ExpandedValue<ST[K], CTX>;
+        };
+
+        let selector = new Selector(new CoffeeCup(), "loadable")
+            // .select(x => x.label)
+            // .select(x => x.volume)
+            .select(x => x.beans, x => x.select(x => x.origin))
+            ;
+
+        let selected = selector.build();
+
+        let selectedInstance: Instance<CoffeeCup, "loadable", Property, never, typeof selected> = {
+            // label: "foo",
+            beans: {
+                origin: "Africa"
+            },
+            color: "black",
+        }
+    });
+
+    it("playing with entity-set", () => {
+        class CoffeeCupType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCupType);
+            label = Property.create("label", String, b => b.loadable(["optional"]));
+            beans = Property.create("beans", CoffeeBeansType, b => b.loadable(["optional"]));
+            volume = Property.create("volume", Number, b => b.loadable(["optional", "nullable"]));
+        }
+
+        class CoffeeBeansType {
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeBeansType);
+            origin = Property.create("origin", String, b => b.loadable(["optional"]));
+            tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
+        }
+
+        let coffeeCupTypeEntitySet = new EntitySet(new CoffeeCupType(), "loadable");
+
+        try {
+            // [todo] beans should exist on type maybe?
+            coffeeCupTypeEntitySet.get()[0].beans;
+            coffeeCupTypeEntitySet.get()[0].volume;
+            coffeeCupTypeEntitySet.get()[0].volume;
+            coffeeCupTypeEntitySet.get()[0].label;
+        } catch (error) {
+            // on purpose since implementation is still missing
         }
     });
 

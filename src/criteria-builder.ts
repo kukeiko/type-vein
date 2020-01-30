@@ -1,6 +1,7 @@
 import { Property } from "./property";
 import { Attribute } from "./attribute";
 import { Context } from "./context";
+import { Unbox } from "./lang";
 
 export class CriteraBuilder<T, C extends Context> {
     equals<P extends Property.Primitive & Attribute.IsFilterable>(
@@ -13,7 +14,7 @@ export class CriteraBuilder<T, C extends Context> {
 
     select<P extends Property.Complex>(
         select: (properties: T) => P,
-        filter: (criteriaBuilder: CriteraBuilder<P["value"], C>) => any
+        filter: (criteriaBuilder: CriteraBuilder<Unbox<P["value"]>, C>) => any
     ): this {
         return this;
     }
