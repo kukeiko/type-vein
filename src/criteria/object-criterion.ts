@@ -4,11 +4,8 @@ import { Property } from "../property";
 import { Primitive, Unbox } from "../lang";
 import { Attribute } from "../attribute";
 
-export type PropertyCriterion
-    = ValueCriterion | ValuesCriterion | ObjectCriterion;
-
-export type PropertyCriteria
-    = ValueCriterion[] | ValuesCriterion[] | ObjectCriterion[];
+export type PropertyCriterion = ValueCriterion | ValuesCriterion | ObjectCriterion;
+export type PropertyCriteria = ValueCriteria | ValuesCriteria | ObjectCriteria;
 
 export module PropertyCriterion {
     export function areSameType<A extends PropertyCriterion>(a: A, b: any): b is A {
@@ -24,23 +21,32 @@ export module PropertyCriterion {
     }
 }
 
-export type ObjectCriterion = Record<string, ObjectCriterion.PropertyCriteria>;
-
+export type ObjectCriterion = Record<string, PropertyCriteria>;
 export type ObjectCriteria = ObjectCriterion[];
 
-export module ObjectCriterion {
-    export type PropertyCriteria = ValueCriteria | ValuesCriteria | ObjectCriteria;
+export module ObjectCriteria {
+    export type ForType<T> = ObjectCriterion.ForType<T>[];
+}
 
+export module ObjectCriterion {
     export type ForType<T> = {
-        [K in Property.Keys<T>]?
+        [K in Property.Keys<T, Attribute.IsFilterable>]?
         : T[K] extends Property & { value: Primitive; } & Attribute.IsIterable ? ValuesCriterion[]
         : T[K] extends Property & { value: Primitive; } ? ValueCriterion[]
         : T[K] extends Property ? ObjectCriterion.ForType<Unbox<T[K]["value"]>>[]
         : never;
     };
 
+    export type FlatForType<T> = {
+        [K in Property.Keys<T, Attribute.IsFilterable>]?
+        : T[K] extends Property & { value: Primitive; } & Attribute.IsIterable ? ValuesCriterion
+        : T[K] extends Property & { value: Primitive; } ? ValueCriterion
+        : T[K] extends Property ? ObjectCriterion.ForType<Unbox<T[K]["value"]>>
+        : never;
+    };
+
     export function reduce(a: ObjectCriterion, b: ObjectCriterion): ObjectCriterion | null {
-        let reducedPropertyCriteria: { key: string; reduced: ObjectCriterion.PropertyCriteria; } | undefined;
+        let reducedPropertyCriteria: { key: string; reduced: PropertyCriteria; } | undefined;
 
         for (let key in a) {
             let criteriaB = b[key];
@@ -54,7 +60,7 @@ export module ObjectCriterion {
             }
 
             let criteriaA = a[key];
-            let reduced: ObjectCriterion.PropertyCriteria | null;
+            let reduced: PropertyCriteria | null;
 
             if (ValueCriteria.is(criteriaA)) {
                 if (ValueCriteria.is(criteriaB)) {
@@ -95,5 +101,10 @@ export module ObjectCriterion {
                 [reducedPropertyCriteria.key]: reducedPropertyCriteria.reduced
             };
         }
+    }
+
+    // export function flatten<T extends Partial<ObjectCriterion>>(criterion: T): { [K in keyof T]: T[K] extends PropertyCriteria ? T[K][keyof PropertyCriteria] : never } {
+    export function flatten<T>(criteria: ForType<T>[]): FlatForType<T>[] {
+        return {} as any;
     }
 }
