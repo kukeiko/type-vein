@@ -1,9 +1,7 @@
-
-
-import { Selection } from "./selection";
+import { Selection, UntypedSelection } from "./selection";
 import { Instance } from "./instance";
 import { Query } from "./query";
-import { SourceType } from "./source-type";
+import { SourceType, SourceTypeSymbol } from "./source-type";
 
 export interface LoadedInstances<T extends SourceType, S> {
     instances: Instance.Selected<T, S>[];
@@ -12,20 +10,19 @@ export interface LoadedInstances<T extends SourceType, S> {
 
 export module LoadedInstances {
     export interface Untyped {
-        instances: any[];
+        instances: Object[];
         loadedSelection: Object;
     }
 }
 
 export type InstanceLoader<T extends SourceType> = <S extends Selection<T>>(query: Query<T, S>) => Promise<LoadedInstances.Untyped>;
-export type HydrationQueryFactory<T extends SourceType> = <S extends Selection<T>>(query: Query<T, S>) => [];
+export type HydrationQueryFactory<T extends SourceType> = <S extends Selection<T>>(query: Query<T, S>) => Query<SourceType, Object>[];
 
 export class Domain {
     private readonly _loaders = new Map<any, InstanceLoader<any>>();
 
-    // load<T extends SourceType, S>(query: Query<T, S>): Instance.Selected<T, S>[] {
     load<T extends SourceType, S>(query: Query<T, S>): LoadedInstances<T, S> {
-        const loader = this._loaders.get(query.type);
+        const loader = this._loaders.get(query.type[SourceTypeSymbol].class);
 
         if (loader === void 0) {
             throw new Error(`no loader found for queried type`);
@@ -35,12 +32,24 @@ export class Domain {
     }
 
     addLoader<T extends SourceType>(type: T, loader: InstanceLoader<T>): this {
-        this._loaders.set(type, loader);
+        this._loaders.set(type[SourceTypeSymbol].class, loader);
         return this;
     }
 
-    addHydrator(): this {
+    addHydrationQueryFactory<T extends SourceType>(type: T): this {
 
         return this;
+    }
+
+    async executeQuery<T extends SourceType, S>(query: Query<T, S>): Promise<Instance.Selected<T, S>[]> {
+        const loader = this._loaders.get(query.type[SourceTypeSymbol].class);
+
+        if (loader === void 0) {
+            throw new Error(`no loader found for queried type`);
+        }
+
+        const result = await loader(query);
+
+        return result.instances as Instance.Selected<T, S>[];
     }
 }
