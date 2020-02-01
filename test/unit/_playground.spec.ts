@@ -13,7 +13,7 @@ describe("playground", () => {
         }
 
         class SquareType {
-            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            [SourceTypeSymbol] = SourceType.createMetadata(SquareType);
             area = Property.create("area", Number, b => b.loadable());
             length = Property.create("length", Number, b => b.loadable());
             type = Property.create("type", "square" as "square", b => b.loadable());
@@ -466,7 +466,7 @@ describe("playground", () => {
 
     it("playing w/ selection", () => {
         class AuthorType {
-            [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
+            [SourceTypeSymbol] = SourceType.createMetadata(AuthorType);
             id = Property.create("id", Number, b => b.loadable());
             name = Property.create("name", String, b => b.loadable(["optional"]));
         }
@@ -479,7 +479,7 @@ describe("playground", () => {
         }
 
         class SquareType {
-            [SourceTypeSymbol] = SourceType.createMetadata(CircleType);
+            [SourceTypeSymbol] = SourceType.createMetadata(SquareType);
             area = Property.create("area", Number, b => b.loadable(["optional"]));
             length = Property.create("length", Number, b => b.loadable(["optional"]));
             type = Property.create("type", "square" as "square", b => b.loadable());
