@@ -4,8 +4,6 @@ import { Property } from "../property";
 import { Primitive, Unbox, StringIndexable } from "../lang";
 import { Attribute } from "../attribute";
 import { ObjectCriteria } from "./object-criteria";
-import { SourceType } from "../source-type";
-import { Instance } from "../instance";
 
 export type PropertyCriterion = ValueCriterion | ValuesCriterion | ObjectCriterion;
 export type PropertyCriteria = ValueCriteria | ValuesCriteria | ObjectCriteria;

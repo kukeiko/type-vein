@@ -3,12 +3,41 @@ import { CriteraBuilder } from "./criteria-builder";
 import { Replace } from "./lang";
 import { Selector } from "./selector";
 import { ObjectCriteria } from "./criteria";
+import { UntypedSelection, Selection } from "./selection";
 
 export type Query<T extends SourceType, S> = {
     type: T;
     selection: S;
     criteria: ObjectCriteria.ForType<T>;
 };
+
+export module Query {
+    export function reduce<T extends SourceType, S>(a: Query<T, S>, b: Query<T, S>): Query<T, UntypedSelection> | null {
+        const reducedCriteria = ObjectCriteria.reduce(a.criteria as ObjectCriteria, b.criteria as ObjectCriteria);
+
+        if (reducedCriteria === null) {
+            const reducedSelection = Selection.reduce(a.selection as any, b.selection as any);
+
+            if (reducedSelection === null) {
+                return null;
+            } else if (reducedSelection === a.selection as any) {
+                return a as any as Query<T, UntypedSelection>;
+            } else {
+                return {
+                    ...a,
+                    selection: reducedSelection as any
+                };
+            }
+        } else if (reducedCriteria !== a.criteria && Selection.isSuperset(b.selection as any, a.selection as any)) {
+            return {
+                ...a,
+                criteria: reducedCriteria as ObjectCriteria.ForType<T>
+            } as any as Query<T, UntypedSelection>;
+        } else {
+            return a as any as Query<T, UntypedSelection>;
+        }
+    }
+}
 
 export class QueryBuilder<T extends SourceType> {
     constructor(type: T) {

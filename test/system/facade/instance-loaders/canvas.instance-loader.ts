@@ -10,6 +10,7 @@ export const canvasInstanceLoader : InstanceLoader<CanvasType> = async query => 
 
     // instance with all baseline required properties
     let canvas: Instance<CanvasType> = {
+        id: 1,
         name: "A Sun and a Square"
     };
 
