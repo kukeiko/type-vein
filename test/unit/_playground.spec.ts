@@ -1,4 +1,4 @@
-import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, Context, ValueCriterion, ValueCriteria, Primitive, Unbox } from "../../src";
+import { SourceType, Property, QueryBuilder, Instance, SourceTypeSymbol, Context, ValueCriterion, ValueCriteria, Primitive, Unbox, Domain } from "../../src";
 import { EntitySet } from "../../src/entity-set";
 import { Selection } from "../../src/selection";
 import { Selector } from "../../src/selector";
@@ -42,7 +42,7 @@ describe("playground", () => {
         };
 
         /**
-         * union is nested within another type
+         * making sure unions also work as expected when nested
          */
         let canvasInstance: Instance<CanvasType> = {
             shapes: [
@@ -60,7 +60,7 @@ describe("playground", () => {
                     type: "circle",
                     area: 54,
                     radius: 3
-                },
+                }
             ]
         }
 
@@ -70,11 +70,11 @@ describe("playground", () => {
         function takesUnionInstance(instance: Instance<CircleType> | Instance<SquareType>): void {
             switch (instance.type) {
                 case "circle":
-                    let area = instance.area;
+                    expect(instance.radius).toBeDefined();
                     break;
 
                 case "square":
-                    let length = instance.length;
+                    expect(instance.length).toBeDefined();
                     break;
             }
         }
@@ -166,7 +166,7 @@ describe("playground", () => {
         // };
     });
 
-    it("playing with instance-loader #2", () => {
+    xit("playing with domain", () => {
         // arrange
         class AuthorType {
             [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
@@ -196,87 +196,87 @@ describe("playground", () => {
         }
 
         // act
-        class CanvasInstanceLoader {
-            load<S extends Selection<CanvasType>>(selection: S): Instance.Selected<CanvasType, S>[] {
-                // load<S extends Selection<CanvasType>>(selection: S) {
-                //instance with all baseline required properties
-                let canvas: Instance<CanvasType> = {
-                    name: "A Sun and a Square"
-                };
+        const instanceLoaders = new Domain();
 
-                // include properties based on the given selection
-                if (selection.author) {
-                    canvas.author = {
-                        id: 7
-                    };
+        instanceLoaders.addLoader(new CanvasType(), async query => {
+            const queriedSelection = query.selection;
+            const loadedSelection: Selection<CanvasType> = {};
 
-                    if (selection.author.name) {
-                        canvas.author.name = "Susi Sonne";
-                    }
+            // instance with all baseline required properties
+            let canvas: Instance<CanvasType> = {
+                name: "A Sun and a Square"
+            };
+
+            // include properties based on the given selection
+            if (queriedSelection.author) {
+                canvas.author = { id: 7 };
+                loadedSelection.author = {};
+
+                if (queriedSelection.author.name) {
+                    canvas.author.name = "Susi Sonne";
+                    loadedSelection.author.name = true;
                 }
-
-                if (selection.shapes) {
-                    const sunShape: Instance<CircleType> = {
-                        type: "circle"
-                    };
-
-                    const squareShape: Instance<SquareType> = {
-                        type: "square"
-                    };
-
-                    // check selections for properties common across all shapes
-                    if (selection.shapes.area) {
-                        sunShape.area = Math.PI * 12;
-                        squareShape.area = 25;
-                    }
-
-                    // check selections for properties only on circle shapes
-                    const circleSelection = selection.shapes as Selection<CircleType>;
-
-                    if (circleSelection.radius) {
-                        sunShape.radius = 12;
-                    }
-
-                    // check selections for properties only on square shapes
-                    const squareSelection = selection.shapes as Selection<SquareType>;
-
-                    if (squareSelection.length) {
-                        squareShape.length = 5;
-                    }
-
-                    canvas.shapes = [sunShape, squareShape];
-                }
-
-                return [canvas] as Instance.Selected<CanvasType, S>[];
             }
-        }
 
+            if (queriedSelection.shapes) {
+                const sunShape: Instance<CircleType> = { type: "circle" };
+                const squareShape: Instance<SquareType> = { type: "square" };
+                loadedSelection.shapes = {};
 
+                // check selections for properties common across all shapes
+                if (queriedSelection.shapes.area) {
+                    sunShape.area = Math.PI * 12;
+                    squareShape.area = 25;
+                    loadedSelection.shapes.area = true;
+                }
 
-        // creating a selector for helping us create a customly typed selection
-        const selector = new Selector(new CanvasType(), "loadable");
+                // check selections for properties only on circle shapes
+                const circleSelection = queriedSelection.shapes as Selection<CircleType>;
+
+                if (circleSelection.radius) {
+                    sunShape.radius = 12;
+                    (loadedSelection.shapes as Selection<CircleType>).radius = true;
+                }
+
+                // check selections for properties only on square shapes
+                const squareSelection = queriedSelection.shapes as Selection<SquareType>;
+
+                if (squareSelection.length) {
+                    squareShape.length = 5;
+                    (loadedSelection.shapes as Selection<SquareType>).length = true;
+                }
+
+                canvas.shapes = [sunShape, squareShape];
+            }
+
+            return {
+                instances: [canvas],
+                loadedSelection
+            };
+        });
 
         // picking the properties we want to have included
-        const selection = selector
-            .select(canvas => canvas.author, s => s
-                .select(author => author.name)
+        const result = instanceLoaders.load(new QueryBuilder(new CanvasType())
+            .include(x => x
+                .select(canvas => canvas.author, s => s
+                    .select(author => author.name)
+                )
+                .select(canvas => canvas.shapes, s => s
+                    .select(shape => shape.area)
+                )
+                .select(canvas => canvas.shapes, () => CircleType, s => s
+                    .select(circle => circle.radius)
+                )
+                .select(canvas => canvas.shapes, () => SquareType, s => s
+                    .select(circle => circle.length)
+                )
             )
-            .select(canvas => canvas.shapes, s => s
-                .select(shape => shape.area)
-            )
-            .select(canvas => canvas.shapes, () => CircleType, s => s
-                .select(circle => circle.radius)
-            )
-            .select(canvas => canvas.shapes, () => SquareType, s => s
-                .select(circle => circle.length)
-            )
-            .build();
-
-        const loader = new CanvasInstanceLoader();
-        const instances = loader.load(selection);
+            .build()
+        );
 
         // assert
-        for (let instance of instances) {
+        for (let instance of result.instances) {
+            expect(instance.author).toBeDefined();
             expect(instance.author.name).toBeDefined();
             expect(instance.shapes).toBeDefined();
 
@@ -312,7 +312,7 @@ describe("playground", () => {
             name = Property.create("name", String, b => b.loadable().filterable());
         }
 
-        let typeQuery = new Query(new AlbumType());
+        let typeQuery = new QueryBuilder(new AlbumType());
 
         let selectedType = typeQuery
             .include(s => s
@@ -464,7 +464,7 @@ describe("playground", () => {
         };
     });
 
-    it("playing w/ expansion", () => {
+    it("playing w/ selection", () => {
         class AuthorType {
             [SourceTypeSymbol] = SourceType.createMetadata(CanvasType);
             id = Property.create("id", Number, b => b.loadable());

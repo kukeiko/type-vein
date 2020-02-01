@@ -1,4 +1,4 @@
-import { SourceTypeSymbol, SourceType, Property, Query } from "../../src";
+import { SourceTypeSymbol, SourceType, Property, QueryBuilder } from "../../src";
 
 describe("query", () => {
     /**
@@ -19,7 +19,7 @@ describe("query", () => {
             tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
         }
 
-        class CoffeeCupTypeQuery extends Query<CoffeeCupType> {
+        class CoffeeCupTypeQuery extends QueryBuilder<CoffeeCupType> {
             constructor() {
                 super(new CoffeeCupType());
             }

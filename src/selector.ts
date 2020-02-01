@@ -1,7 +1,7 @@
 import { Context } from "./context";
 import { Property } from "./property";
 import { Unbox } from "./lang";
-import { mergeSelections } from "./selection";
+import { Selection } from "./selection";
 
 export class Selector<T, CTX extends Context, S extends {} = {}> {
     constructor(type: T, context: CTX, selection: S = {} as S) {
@@ -59,7 +59,7 @@ export class Selector<T, CTX extends Context, S extends {} = {}> {
                     }
 
                     const expanded = expandFn ? expandFn(new Selector(type, this._context)).build() : {};
-                    (this._selection as any)[property.key] = mergeSelections((this._selection as any)[property.key], expanded);
+                    (this._selection as any)[property.key] = Selection.merge((this._selection as any)[property.key], expanded);
                 }
             } else {
                 throw new Error(`arguments didn't match any overload signature`);

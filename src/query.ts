@@ -2,21 +2,24 @@ import { SourceType } from "./source-type";
 import { CriteraBuilder } from "./criteria-builder";
 import { Replace } from "./lang";
 import { Selector } from "./selector";
+import { ObjectCriteria } from "./criteria";
 
-export type QueriedType<T extends SourceType, S> = {
+export type Query<T extends SourceType, S> = {
     type: T;
     selection: S;
-    criteria: CriteraBuilder<T, "loadable">;
+    criteria: ObjectCriteria.ForType<T>;
 };
 
-export class Query<T extends SourceType> {
+export class QueryBuilder<T extends SourceType> {
     constructor(type: T) {
         this.type = type;
         this.selector = new Selector(type, "loadable");
+        this.criteriaBuilder = new CriteraBuilder(type);
     }
 
     readonly type: T;
     readonly selector: Selector<T, "loadable">;
+    readonly criteriaBuilder: CriteraBuilder<T, "loadable">;
 
     include<O>(select: (selector: Selector<T, "loadable", ReturnType<this["selector"]["build"]>>) => Selector<T, "loadable", O>)
         : this & Replace<this, "selector", Selector<T, "loadable", O>> {
@@ -31,11 +34,11 @@ export class Query<T extends SourceType> {
         return this;
     }
 
-    build(): QueriedType<T, ReturnType<this["selector"]["build"]>> {
+    build(): Query<T, ReturnType<this["selector"]["build"]>> {
         return {
             type: this.type,
             selection: this.selector.build() as ReturnType<this["selector"]["build"]>,
-            criteria: {} as CriteraBuilder<T, "loadable">
+            criteria: this.criteriaBuilder.build()
         };
     }
 }
