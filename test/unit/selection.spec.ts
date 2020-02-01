@@ -76,4 +76,18 @@ describe("selection", () => {
             expect(reduced).toEqual({ foo: { baz: true } });
         });
     });
+
+    describe("isSuperset()", () => {
+        it("{ foo: true, bar: true } should be a superset of { foo: true }", () => {
+            // arrange
+            const a: UntypedSelection = { foo: true, bar: true };
+            const b: UntypedSelection = { foo: true };
+
+            // act
+            const isSuperset = Selection.isSuperset(a, b);
+
+            // assert
+            expect(isSuperset).toBeTrue();
+        });
+    });
 });
