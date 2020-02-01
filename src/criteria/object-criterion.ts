@@ -43,6 +43,7 @@ export module ObjectCriterion {
         : never;
     };
 
+    // reduces b by a
     export function reduce(a: ObjectCriterion, b: ObjectCriterion): ObjectCriterion | null {
         let reducedPropertyCriteria: { key: string; reduced: PropertyCriteria; } | undefined;
 

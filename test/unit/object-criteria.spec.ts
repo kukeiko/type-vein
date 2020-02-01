@@ -77,4 +77,62 @@ describe("object-criteria", () => {
             expect(filtered).toEqual(unfiltered.filter(x => x.bar === 1 || x.bar === 2));
         });
     });
+
+    describe("reduce()", () => {
+        it("[{ foo == 1 }, { foo == 2 }] reduced by [{ foo == 1 }] should be [{ foo == 2 }]", () => {
+            // arrange
+            const a: ObjectCriteria = [
+                { foo: [{ op: "==", value: 1 }] },
+                { foo: [{ op: "==", value: 2 }] }
+            ];
+
+            const b: ObjectCriteria = [
+                { foo: [{ op: "==", value: 1 }] }
+            ];
+
+            // act
+            const reduced = ObjectCriteria.reduce(a, b);
+
+            // assert
+            expect(reduced).toEqual([{ foo: [{ op: "==", value: 2 }] }]);
+        });
+
+        it("[{ foo == 1 }, { foo == 2 }] reduced by [{ foo == 1 }, { foo == 2 }] should be null", () => {
+            // arrange
+            const a: ObjectCriteria = [
+                { foo: [{ op: "==", value: 1 }] },
+                { foo: [{ op: "==", value: 2 }] }
+            ];
+
+            const b: ObjectCriteria = [
+                { foo: [{ op: "==", value: 1 }] },
+                { foo: [{ op: "==", value: 2 }] }
+            ];
+
+            // act
+            const reduced = ObjectCriteria.reduce(a, b);
+
+            // assert
+            expect(reduced).toBeNull();
+        });
+
+        it("[{ foo == 1 }, { foo == 2 }] reduced by [{ foo == 3 }, { foo == 4 }] should be unchanged", () => {
+            // arrange
+            const a: ObjectCriteria = [
+                { foo: [{ op: "==", value: 1 }] },
+                { foo: [{ op: "==", value: 2 }] }
+            ];
+
+            const b: ObjectCriteria = [
+                { foo: [{ op: "==", value: 3 }] },
+                { foo: [{ op: "==", value: 4 }] }
+            ];
+
+            // act
+            const reduced = ObjectCriteria.reduce(a, b);
+
+            // assert
+            expect(reduced).toBe(a);
+        });
+    });
 });
