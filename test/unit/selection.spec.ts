@@ -75,6 +75,18 @@ describe("selection", () => {
             // assert
             expect(reduced).toEqual({ foo: { baz: true } });
         });
+
+        it("{ foo: {} } reduced by { foo: {} } should be null", () => {
+            // arrange
+            const a: UntypedSelection = { foo: {} };
+            const b: UntypedSelection = { foo: {} };
+
+            // act
+            const reduced = Selection.reduce(a, b);
+
+            // assert
+            expect(reduced).toBeNull();
+        });
     });
 
     describe("isSuperset()", () => {

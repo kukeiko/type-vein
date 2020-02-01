@@ -39,6 +39,10 @@ export module Selection {
     }
 
     export function reduce(a: UntypedSelection, b: UntypedSelection): UntypedSelection | null {
+        if (Object.keys(a).length === 0) {
+            return null;
+        }
+
         const reduced = copy(a);
         let didReduce = false;
 
