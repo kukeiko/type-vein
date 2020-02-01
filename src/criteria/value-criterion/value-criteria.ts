@@ -1,4 +1,5 @@
 import { ValueCriterion } from "./value-criterion";
+import { StringIndexable } from "../../lang";
 
 export type ValueCriteria = ValueCriterion[];
 
@@ -46,5 +47,27 @@ export module ValueCriteria {
         } else {
             return b;
         }
+    }
+
+    export function filter<T extends StringIndexable>(instances: T[], key: string, criteria: ValueCriteria): T[] {
+        const filtered = new Set<T>();
+
+        for (const criterion of criteria) {
+            let matches: (instance: T) => boolean = () => false;
+
+            switch (criterion.op) {
+                case "==": matches = instance => instance[key] === criterion.value; break;
+                case "in": matches = instance => criterion.values.has(instance[key]); break;
+                default: throw new Error(`criterion op '${criterion.op}' not yet supported`);
+            }
+
+            for (const instance of instances) {
+                if (matches(instance)) {
+                    filtered.add(instance);
+                }
+            }
+        }
+
+        return Array.from(filtered.values());
     }
 }

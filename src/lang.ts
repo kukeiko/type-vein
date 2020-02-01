@@ -33,3 +33,7 @@ export type Unbox<T>
     : T;
 
 export type Replace<T, K extends keyof T, V> = Omit<T, K> & Record<K, V>;
+
+export interface StringIndexable {
+    [key: string]: any;
+}

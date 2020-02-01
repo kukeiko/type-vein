@@ -2,7 +2,7 @@ import { Property } from "./property";
 import { Attribute } from "./attribute";
 import { Context } from "./context";
 import { Unbox } from "./lang";
-import { ObjectCriteria } from "./criteria/object-criterion";
+import { ObjectCriteria } from "./criteria";
 
 export class CriteraBuilder<T, C extends Context> {
     constructor(type: T) {

@@ -1,8 +1,11 @@
 import { ValueCriterion, ValueCriteria } from "./value-criterion";
 import { ValuesCriterion, ValuesCriteria } from "./values-criterion";
 import { Property } from "../property";
-import { Primitive, Unbox } from "../lang";
+import { Primitive, Unbox, StringIndexable } from "../lang";
 import { Attribute } from "../attribute";
+import { ObjectCriteria } from "./object-criteria";
+import { SourceType } from "../source-type";
+import { Instance } from "../instance";
 
 export type PropertyCriterion = ValueCriterion | ValuesCriterion | ObjectCriterion;
 export type PropertyCriteria = ValueCriteria | ValuesCriteria | ObjectCriteria;
@@ -22,11 +25,6 @@ export module PropertyCriterion {
 }
 
 export type ObjectCriterion = Record<string, PropertyCriteria>;
-export type ObjectCriteria = ObjectCriterion[];
-
-export module ObjectCriteria {
-    export type ForType<T> = ObjectCriterion.ForType<T>[];
-}
 
 export module ObjectCriterion {
     export type ForType<T> = {
@@ -106,5 +104,21 @@ export module ObjectCriterion {
     // export function flatten<T extends Partial<ObjectCriterion>>(criterion: T): { [K in keyof T]: T[K] extends PropertyCriteria ? T[K][keyof PropertyCriteria] : never } {
     export function flatten<T>(criteria: ForType<T>[]): FlatForType<T>[] {
         return {} as any;
+    }
+
+    export function filter<T extends StringIndexable>(instances: T[], criterion: ObjectCriterion): T[] {
+        let filtered: T[] = [];
+
+        for (const propertyCriteriaKey in criterion) {
+            const propertyCriteria = criterion[propertyCriteriaKey];
+
+            if (ValueCriteria.is(propertyCriteria)) {
+                filtered = ValueCriteria.filter(instances, propertyCriteriaKey, propertyCriteria);
+            } else {
+                throw new Error(`as of yet only simple value criteria filtering is supported`);
+            }
+        }
+
+        return filtered;
     }
 }
