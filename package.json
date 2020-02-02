@@ -17,7 +17,7 @@
         "test:watch": "karma start",
         "test:debug": "karma start",
         "npmprepublish": "npm run build && npm run test",
-        "lint": "tslint --project ."
+        "lint": "tslint --project . --format codeFrame"
     },
     "peerDependencies": {},
     "devDependencies": {
@@ -32,7 +32,7 @@
         "karma-sourcemap-loader": "0.3.7",
         "karma-webpack": "4.0.2",
         "puppeteer": "2.0.0",
-        "rimraf": "3.0.0",        
+        "rimraf": "3.0.0",
         "ts-loader": "6.2.1",
         "tslint": "5.20.1",
         "typescript": "3.7.3",
