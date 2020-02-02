@@ -24,7 +24,7 @@
     "devDependencies": {
         "@types/jasmine": "3.5.0",
         "commitizen": "^4.0.3",
-        "cz-customizable": "^6.2.0",
+        "cz-emoji": "^1.2.0",
         "istanbul-instrumenter-loader": "3.0.1",
         "jasmine-core": "3.5.0",
         "karma": "4.4.1",
@@ -42,11 +42,64 @@
         "webpack": "4.41.4"
     },
     "config": {
-        "commitizen": {
-            "path": "node_modules/cz-customizable"
+        "cz-emoji": {
+            "types":[
+              {
+                "name": "feat \t\t🌟  A new feature",
+                "value": ":star2:"
+              },
+              {
+                "name": "fix \t\t🐞  A bug fix",
+                "value": ":beetle:"
+              },
+              {
+                "name": "test \t\t✔️ Testing improved with new or fixed tests",
+                "value": ":white_check_mark:"
+              },
+              {
+                "name": "chore \t🔩  Doesn't modify src or test files",
+                "value": ":nut_and_bolt:"
+              },
+              {
+                "name": "style \t✏️  Doesn't affect the meaning of the code (white-space, semi-colons, etc)",
+                "value": ":pencil2:"
+              },
+              {
+                "name": "docs \t\t📚  Documentation change",
+                "value": ":pencil:"
+              },
+              {
+                "name": "refactor \t🎨  Neither fixes a bug nor adds a feature",
+                "value": ":art:"
+              },
+              {
+                "name": "perf \t\t⚡  Improves performance with this change",
+                "value": ":zap:"
+              },
+              {
+                "name": "build \t🚀  Build system config or external dependencies ($compile)",
+                "value": ":rocket:"
+              },
+              {
+                "name": "ci \t\t👷  CI config files and scripts ($arch)",
+                "value": ":construction_worker:"
+              },
+              {
+                "name": "revert \t💊  Reverts a previous commit",
+                "value": ":pill:"
+              }
+            ],
+            "scopes": [
+              "core",
+              "query",
+              "compile",
+              "arch",
+              "odata",
+              "graphQL"
+            ]
         },
-        "cz-customizable": {
-            "config": "./.cz-config.js"
+        "commitizen": {
+            "path": "cz-emoji"
         }
     }
 }

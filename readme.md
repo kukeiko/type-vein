@@ -9,7 +9,8 @@ Types are defined by specifying their properties and what you can do with them (
 
 Submit a pull request. One can pick one of the issues labeled with the "good first issue" label.  
 The repository is commitizen friendly, so commits should follow [this](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines) commit guidelines.  
-We are using the [cz-customize](https://github.com/leonardoanalista/cz-customizable) plugin. The configuration can be found in the [**.cz-config.js**](./.cz-config.js) file.
+We are using the commitizen family project [cz-emoji](https://github.com/ngryman/cz-emoji), which is a plugin for cz-cli.  
+The configuration can be found in the [**package.json**](./package.json) file.
 
 **TL;DR:** Once you feel you are ready to submit your changes just execute this command in your console:  
 
@@ -18,7 +19,14 @@ npm run commit
 ```
 
 It will give you a nice prompt and will ask is it a feature/bug/refactoring see below:  
-![prompt](https://raw.githubusercontent.com/commitizen/cz-cli/master/meta/screenshots/add-commit.png)
+```sh
+? Select the type of change you are committing: (Use arrow keys)
+❯ feature   🌟  A new feature
+  fix       🐞  A bug fix
+  docs      📚  Documentation change
+  refactor  🎨  A code refactoring change
+  chore     🔩  A chore change
+```
 
 Then you specify what is a subject of the changes you provide and it generates  
 the commit message that is consistent with the commit messages in this repository.
