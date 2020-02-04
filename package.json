@@ -17,7 +17,7 @@
         "test:watch": "karma start",
         "test:debug": "karma start",
         "npmprepublish": "npm run build && npm run test",
-        "lint": "tslint --project .",
+        "lint": "tslint --project . --format codeFrame",
         "commit": "git-cz"
     },
     "peerDependencies": {},
