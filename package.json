@@ -17,11 +17,14 @@
         "test:watch": "karma start",
         "test:debug": "karma start",
         "npmprepublish": "npm run build && npm run test",
-        "lint": "tslint --project ."
+        "lint": "tslint --project .",
+        "commit": "git-cz"
     },
     "peerDependencies": {},
     "devDependencies": {
         "@types/jasmine": "3.5.0",
+        "commitizen": "^4.0.3",
+        "cz-customizable": "^6.2.0",
         "istanbul-instrumenter-loader": "3.0.1",
         "jasmine-core": "3.5.0",
         "karma": "4.4.1",
@@ -32,10 +35,18 @@
         "karma-sourcemap-loader": "0.3.7",
         "karma-webpack": "4.0.2",
         "puppeteer": "2.0.0",
-        "rimraf": "3.0.0",        
+        "rimraf": "3.0.0",
         "ts-loader": "6.2.1",
         "tslint": "5.20.1",
         "typescript": "3.7.3",
         "webpack": "4.41.4"
+    },
+    "config": {
+        "commitizen": {
+            "path": "node_modules/cz-customizable"
+        },
+        "cz-customizable": {
+            "config": "./.cz-config.js"
+        }
     }
 }

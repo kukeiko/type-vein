@@ -5,6 +5,24 @@ Serves a similar purpose as GraphQL, but is actually inspired by the LightSwitch
 
 Types are defined by specifying their properties and what you can do with them (loadable, creatable, patchable, nullable, optional, ...). With queries you define the tree of entities you want to load (Selection) and how to filter them (Criteria). The actual loading logic has to be implemented by the developer.
 
+# Contributing
+
+Submit a pull request. One can pick one of the issues labeled with the "good first issue" label.  
+The repository is commitizen friendly, so commits should follow [this](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines) commit guidelines.  
+We are using the [cz-customize](https://github.com/leonardoanalista/cz-customizable) plugin. The configuration can be found in the [**.cz-config.js**](./.cz-config.js) file.
+
+**TL;DR:** Once you feel you are ready to submit your changes just execute this command in your console:  
+
+```bash
+npm run commit
+```
+
+It will give you a nice prompt and will ask is it a feature/bug/refactoring see below:  
+![prompt](https://raw.githubusercontent.com/commitizen/cz-cli/master/meta/screenshots/add-commit.png)
+
+Then you specify what is a subject of the changes you provide and it generates  
+the commit message that is consistent with the commit messages in this repository.
+
 # Status
 Very much work in progress. Immediate goal is to query some data with basic filtering, loaded from an http service.
 
@@ -25,13 +43,11 @@ More details for running karma with different browsers can be found [here](http:
 **Note:** puppeteer should fix this issue consistently on all the OSes, so feel free to create an issue in case it didnt work for you out of the box.
 ##
 
-**Q:** Why is prepublish called npm prepublish?
-
+**Q:** Why is prepublish called npm prepublish?  
 **A:** Npm doesnt distinguish between npm install and prepublish. See more details [here](https://github.com/npm/npm/issues/3059)
 ##
 
 Template:
 
-**Q:**
-
+**Q:**  
 **A:**
